@@ -8,6 +8,7 @@ The whole site is one file, `index.html`. The makers, opening hours and event de
 
 - `index.html` – the website
 - `sheet-template.xlsx` – starting point for the Google Sheet (tabs: How to use, Vendors, Hours, Info)
+- `images/` – maker photos (see `images/README.md`)
 - `logo/` – the bauble logo as SVG, in white (for dark backgrounds) and navy (for light backgrounds)
 
 ## Connecting the Google Sheet
@@ -18,6 +19,13 @@ The whole site is one file, `index.html`. The makers, opening hours and event de
 4. In `index.html`, paste it between the quotes in `const SHEET_ID = "";`
 
 Until a sheet ID is set, the site shows example content.
+
+## Adding maker photos
+
+1. Upload the photo to the `images` folder in this repo (Add file → Upload files).
+2. In the Vendors tab of the sheet, type the file name into `photo_1` (or `photo_2`, `photo_3`), e.g. `harbour-prints-1.jpg`.
+
+The name must match exactly, capitals included. The photo appears once GitHub Pages has redeployed, usually within a minute or two.
 
 ## Hosting with GitHub Pages
 

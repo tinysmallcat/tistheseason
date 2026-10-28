@@ -230,10 +230,14 @@ function toObjects(rows){
 }
 
 /* Google Drive share links -> embeddable image; any other URL passes through */
+/* Photos: a file name like "harbour-prints-1.jpg" loads from the images folder
+   in the GitHub repo. Full links (https://...) and Google Drive links still work. */
 function img(url){
   url = String(url||"").trim(); if(!url) return "";
   const m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{10,})/);
-  return m ? `https://lh3.googleusercontent.com/d/${m[1]}=w1400` : url;
+  if(m) return `https://lh3.googleusercontent.com/d/${m[1]}=w1400`;
+  if(/^(https?:)?\/\//i.test(url) || url.startsWith("data:")) return url;
+  return "images/" + url.replace(/^\/?(images\/)?/i,"").split("/").map(encodeURIComponent).join("/");
 }
 function photos(v){ return [v.photo_1,v.photo_2,v.photo_3,v.photo_4,v.photo_5].map(img).filter(Boolean); }
 function initials(n){ return String(n).split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0].toUpperCase()).join(""); }
