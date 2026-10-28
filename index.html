@@ -51,6 +51,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .hero{background:var(--spruce);color:var(--on-spruce);position:relative;overflow:hidden}
 .hero .wrap{padding-block:40px 60px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:32px;align-items:center}
 .hero .logo{width:150px;height:auto;color:#fff;display:block}
+.logo-row{display:flex;align-items:center;gap:18px}
+.mdates{display:none;font-family:var(--f-hand);font-size:1.7rem;line-height:1.05;color:var(--gilt)}
+.mdates small{display:block;font-family:var(--f-body);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 .hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(1.9rem,4.6vw,3.2rem);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
 .hero h1 em{font-style:normal;color:var(--gilt)}
 .hero p.lede{max-width:46ch;font-size:1.1rem;margin:18px 0 0;opacity:.92}
@@ -126,6 +129,7 @@ footer .wrap{padding-block:28px;display:flex;flex-wrap:wrap;gap:16px;justify-con
   .hero .wrap{grid-template-columns:1fr}
   .hero .logo{width:72px}
   .stamp{display:none}
+  .mdates{display:block}
   .vendor,.visit{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){.tag{transition:none}.tag:hover{transform:none}}
@@ -280,7 +284,10 @@ function home(){
   return `
   <header class="hero">
     <div class="wrap">
-      <svg class="logo" viewBox="0 0 745 981" role="img" aria-label="'Tis The Season bauble logo"><use href="#bauble"/></svg>
+      <div class="logo-row">
+        <svg class="logo" viewBox="0 0 745 981" role="img" aria-label="'Tis The Season bauble logo"><use href="#bauble"/></svg>
+        ${I.dates_short?`<span class="mdates">${esc(I.dates_short)}<small>${esc(I.year||"")}</small></span>`:""}
+      </div>
       <div>
         <p class="eyebrow" style="color:var(--gilt)">Christmas pop-up · Folkestone</p>
         <h1>${esc(I.event_name).replace(/^(&#39;Tis the Season)/,"<em>$1</em>")}</h1>
