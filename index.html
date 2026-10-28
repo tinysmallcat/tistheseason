@@ -121,6 +121,7 @@ footer{background:var(--spruce);color:var(--on-spruce);margin-top:24px}
 footer .wrap{padding-block:28px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;font-size:.9rem}
 .notice{font-size:.85rem;color:var(--muted);padding-block:10px 0}
 .empty{color:var(--muted)}
+.status{min-height:55vh;display:grid;place-items:center;text-align:center;color:var(--muted);padding-block:48px}
 
 @media (max-width:760px){
   .hero .wrap{grid-template-columns:1fr}
@@ -263,6 +264,13 @@ function selectText(b){ const n=b.previousElementSibling; if(!n) return; const r
 
 /* ---------- data ---------- */
 let DATA = SAMPLE, usingSample = true;
+/* "loading" until the sheet has been read; "ready" once there is real data to show; "failed" if it can't be read */
+let state = SHEET_ID.trim() ? "loading" : "ready";
+const CACHE_KEY = "tts-sheet-" + SHEET_ID.trim();
+try{
+  const cached = SHEET_ID.trim() && JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+  if(cached && cached.vendors){ DATA = cached; usingSample = false; state = "ready"; }
+}catch(_){}
 async function loadSheet(){
   if(!SHEET_ID.trim()) return;
   const tab = name => fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID.trim()}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(name)}`)
@@ -271,9 +279,14 @@ async function loadSheet(){
     const [vendors, hours, infoRows] = await Promise.all([tab("Vendors"), tab("Hours"), tab("Info")]);
     const info = {};
     infoRows.forEach(r => { if(r.setting) info[r.setting.toLowerCase().replace(/[^a-z0-9]+/g,"_")] = r.value; });
-    DATA = { info:{...SAMPLE.info, ...info}, hours, vendors: vendors.filter(v => v.name && yes(v.show)) };
-    usingSample = false;
-  }catch(err){ console.warn("Could not read the Google Sheet, showing example content.", err); }
+    DATA = { info:{event_name:SAMPLE.info.event_name, ...info}, hours, vendors: vendors.filter(v => v.name && yes(v.show)) };
+    if(!DATA.info.event_name) DATA.info.event_name = SAMPLE.info.event_name;
+    usingSample = false; state = "ready";
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(DATA)); }catch(_){}
+  }catch(err){
+    console.warn("Could not read the Google Sheet.", err);
+    if(state !== "ready") state = "failed";
+  }
 }
 
 /* ---------- views ---------- */
@@ -390,9 +403,15 @@ function visitPage(){
 }
 
 /* ---------- router ---------- */
-function render(){
+function render(scroll = true){
   const h = location.hash.replace(/^#/,"");
   const app = $("#app");
+  if(state !== "ready"){
+    app.innerHTML = state === "loading"
+      ? `<div class="wrap status" role="status">Loading…</div>`
+      : `<div class="wrap status" role="alert">The makers and opening hours couldn't be loaded just now. Please refresh the page to try again.</div>`;
+    return;
+  }
   let route = "home";
   if(h === "visit"){ app.innerHTML = visitPage(); route="visit"; document.title = "Visit · " + DATA.info.event_name; }
   else if(h.startsWith("v-")){
@@ -406,7 +425,7 @@ function render(){
   $("#foot-name").textContent = `${DATA.info.event_name}${DATA.info.year?" · "+DATA.info.year:""}${usingSample?" · showing example content":""}`;
   const ig = socialURL("instagram", DATA.info.instagram);
   $("#foot-links").innerHTML = ig ? `<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram ↗</a>` : "";
-  if(route!=="home") window.scrollTo(0,0);
+  if(scroll && route!=="home") window.scrollTo(0,0);
 }
 document.addEventListener("click", e => {
   const chip = e.target.closest(".chip");
@@ -424,7 +443,7 @@ document.addEventListener("click", e => {
 });
 window.addEventListener("hashchange", render);
 render();
-loadSheet().then(render);
+loadSheet().then(() => render(false));
 </script>
 
 </body></html>
