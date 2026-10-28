@@ -49,16 +49,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 /* hero */
 .hero{background:var(--spruce);color:var(--on-spruce);position:relative;overflow:hidden}
-.hero .wrap{padding-block:40px 60px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:32px;align-items:center}
+.hero .wrap{padding-block:40px 60px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px 32px;align-items:center}
 .hero .logo{width:150px;height:auto;color:#fff;display:block}
 .logo-row{display:flex;align-items:center;gap:18px}
-.mdates{display:none;font-family:var(--f-hand);font-size:1.7rem;line-height:1.05;color:var(--gilt)}
-.mdates small{display:block;font-family:var(--f-body);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 .hero h1{font-family:var(--f-display);font-weight:500;font-size:clamp(1.9rem,4.6vw,3.2rem);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
 .hero h1 em{font-style:normal;color:var(--gilt)}
 .hero p.lede{max-width:46ch;font-size:1.1rem;margin:18px 0 0;opacity:.92}
-.stamp{width:150px;aspect-ratio:1;max-width:100%;border:2px dashed var(--gilt);border-radius:50%;display:grid;place-items:center;text-align:center;transform:rotate(-8deg);padding:14px;font-family:var(--f-hand);font-size:1.35rem;line-height:1.1;color:var(--gilt)}
-.stamp small{display:block;font-family:var(--f-body);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.hero-dates{grid-column:1/-1;margin:0;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--on-spruce) 22%,transparent);color:var(--gilt);font-weight:700;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}
 .waves{position:absolute;left:0;right:0;bottom:-1px;height:22px;background:
   radial-gradient(circle at 12px -6px,transparent 16px,var(--bg) 17px) 0 0/24px 22px repeat-x}
 
@@ -128,8 +125,6 @@ footer .wrap{padding-block:28px;display:flex;flex-wrap:wrap;gap:16px;justify-con
 @media (max-width:760px){
   .hero .wrap{grid-template-columns:1fr}
   .hero .logo{width:72px}
-  .stamp{display:none}
-  .mdates{display:block}
   .vendor,.visit{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){.tag{transition:none}.tag:hover{transform:none}}
@@ -290,13 +285,12 @@ function home(){
     <div class="wrap">
       <div class="logo-row">
         <svg class="logo" viewBox="0 0 745 981" role="img" aria-label="'Tis The Season bauble logo"><use href="#bauble"/></svg>
-        ${I.dates_short?`<span class="mdates">${esc(I.dates_short)}<small>${esc(I.year||"")}</small></span>`:""}
       </div>
       <div>
         <h1>${esc(I.event_name).replace(/^(&#39;Tis the Season)/,"<em>$1</em>")}</h1>
         <p class="lede">${esc(I.tagline)}</p>
       </div>
-      ${I.dates_short?`<div class="stamp" aria-label="Open ${esc(I.dates_short)}">${esc(I.dates_short)}<small>${esc(I.year||"")}</small></div>`:""}
+      ${I.dates_short?`<p class="hero-dates">Open ${esc(I.dates_short)} ${esc(I.year||"")}</p>`:""}
     </div>
     <div class="waves" aria-hidden="true"></div>
   </header>
