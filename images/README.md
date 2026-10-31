@@ -6,4 +6,4 @@ Upload maker photos here (Add file → Upload files), then type the file name in
 - File names must match exactly, including capitals and `.jpg` vs `.jpeg`
 - Lower-case, no spaces, is safest
 - Keep each photo under about 500 KB (around 1600 px on the longest side) so the site loads quickly on phones
-- Landscape photos fit the cards best (cards crop to 4:3)
+- Photos are shown square, cropped from the centre, so keep the subject in the middle
