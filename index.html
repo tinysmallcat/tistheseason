@@ -50,7 +50,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* hero */
 .hero{background:var(--spruce);color:var(--on-spruce);position:relative;overflow:hidden}
 .hero .wrap{padding-block:40px 60px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px 32px;align-items:center}
-.hero .logo{width:150px;height:auto;color:#fff;display:block}
+.hero .logo{width:150px;height:auto;color:var(--on-spruce);display:block}
 .logo-row{display:flex;align-items:center;gap:18px}
 .hero h1{font-family:var(--f-display);font-weight:500;font-size:clamp(1.9rem,4.6vw,3.2rem);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
 .hero h1 em{font-style:normal;color:var(--gilt)}
@@ -402,6 +402,37 @@ function visitPage(){
   </div>`;
 }
 
+/* ---------- colours from the Info tab ----------
+   header_colour, accent_colour and background_colour accept a hex code
+   (#132640) or a colour name (coral). Blank or unreadable values are ignored. */
+function cssColour(v){
+  v = String(v||"").trim(); if(!v) return "";
+  if(/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(v)) v = "#" + v;
+  return (window.CSS && CSS.supports("color", v)) ? v : "";
+}
+function luminance(c){
+  const el = document.createElement("i"); el.style.color = c; document.body.appendChild(el);
+  const m = getComputedStyle(el).color.match(/[\d.]+/g); el.remove();
+  if(!m) return 0;
+  const [r,g,b] = m.slice(0,3).map(x => { x/=255; return x<=.03928 ? x/12.92 : Math.pow((x+.055)/1.055,2.4); });
+  return .2126*r + .7152*g + .0722*b;
+}
+function applyColours(I){
+  const header = cssColour(I.header_colour || I.header_color);
+  const accent = cssColour(I.accent_colour || I.accent_color);
+  const bg = cssColour(I.background_colour || I.background_color);
+  const R = ":root:root:root"; let css = "";
+  if(header) css += `${R}{--spruce:${header};--on-spruce:${luminance(header) > .4 ? "#132640" : "#f3efe2"}}`;
+  if(accent) css += `${R}{--gilt:${accent};--holly:color-mix(in oklab, ${accent} 72%, #000)}`
+                 + `@media (prefers-color-scheme: dark){${R}:not([data-theme="light"]){--holly:${accent}}}`
+                 + `${R}[data-theme="dark"]{--holly:${accent}}`;
+  if(bg) css += `@media (prefers-color-scheme: light){${R}:not([data-theme="dark"]){--bg:${bg}}}`
+             + `${R}[data-theme="light"]{--bg:${bg}}`;
+  let el = document.getElementById("sheet-colours");
+  if(!el){ el = document.createElement("style"); el.id = "sheet-colours"; document.head.appendChild(el); }
+  el.textContent = css;
+}
+
 /* ---------- router ---------- */
 function render(scroll = true){
   const h = location.hash.replace(/^#/,"");
@@ -412,6 +443,7 @@ function render(scroll = true){
       : `<div class="wrap status" role="alert">The makers and opening hours couldn't be loaded just now. Please refresh the page to try again.</div>`;
     return;
   }
+  applyColours(DATA.info);
   let route = "home";
   if(h === "visit"){ app.innerHTML = visitPage(); route="visit"; document.title = "Visit · " + DATA.info.event_name; }
   else if(h.startsWith("v-")){

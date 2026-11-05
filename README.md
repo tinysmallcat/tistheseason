@@ -20,6 +20,18 @@ The whole site is one file, `index.html`. The makers, opening hours and event de
 
 Until a sheet ID is set, the site shows example content.
 
+## Changing the colours
+
+In the Info tab of the sheet, add or edit these rows (setting in column A, value in column B):
+
+| setting | what it colours | standard |
+|---|---|---|
+| `header_colour` | top bar, header and footer | `#132640` |
+| `accent_colour` | dates line, maker categories, labels, buttons | `#ff8a75` |
+| `background_colour` | main page background (light mode only) | `#eef1f6` |
+
+Use a hex code (`#7a1f2b`) or a colour name (`gold`). Leave a value blank, or remove the row, to go back to the standard colour. Text on the header switches between light and dark automatically so it stays readable. On light backgrounds the accent is shown a shade darker, for the same reason.
+
 ## Adding maker photos
 
 1. Upload the photo to the `images` folder in this repo (Add file → Upload files).
