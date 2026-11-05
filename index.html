@@ -19,6 +19,7 @@
   --gilt:#ff8a75;
   --tag:#fbf7ec;
   --on-spruce:#f3efe2;
+  --on-accent:#ffffff;
   --f-display:"Newsreader", Georgia, "Times New Roman", serif;
   --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-hand:"Caveat", "Segoe Print", cursive;
@@ -114,7 +115,7 @@ table.hours th,table.hours td{text-align:left;padding:10px 6px;border-bottom:1px
 table.hours th{font-weight:500}
 table.hours td.note{color:var(--muted);font-size:.9rem}
 table.hours tr.today{background:color-mix(in srgb,var(--gilt) 14%,transparent)}
-.btn{display:inline-block;background:var(--holly);color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:999px}
+.btn{display:inline-block;background:var(--holly);color:var(--on-accent);text-decoration:none;font-weight:700;padding:10px 18px;border-radius:999px}
 .prose p{margin:0 0 12px;max-width:62ch;white-space:pre-line}
 
 footer{background:var(--spruce);color:var(--on-spruce);margin-top:24px}
@@ -403,8 +404,12 @@ function visitPage(){
 }
 
 /* ---------- colours from the Info tab ----------
-   header_colour, accent_colour and background_colour accept a hex code
-   (#132640) or a colour name (coral). Blank or unreadable values are ignored. */
+   Every colour can be set in the Info tab with a hex code (#132640) or a
+   colour name (coral). Blank or unreadable values use the standard colour.
+   Page colours (background, text, borders, cards, panels): if any are set,
+   the sheet's palette is used for everyone and the dark-mode version is off,
+   so what's in the sheet is what every visitor sees. */
+const PAGE_DEFAULTS = {bg:"#eef1f6", ink:"#132640", muted:"#4c5a72", line:"#c8d0de", surface:"#ffffff", tag:"#fbf7ec"};
 function cssColour(v){
   v = String(v||"").trim(); if(!v) return "";
   if(/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(v)) v = "#" + v;
@@ -418,16 +423,33 @@ function luminance(c){
   return .2126*r + .7152*g + .0722*b;
 }
 function applyColours(I){
-  const header = cssColour(I.header_colour || I.header_color);
-  const accent = cssColour(I.accent_colour || I.accent_color);
-  const bg = cssColour(I.background_colour || I.background_color);
-  const R = ":root:root:root"; let css = "";
-  if(header) css += `${R}{--spruce:${header};--on-spruce:${luminance(header) > .4 ? "#132640" : "#f3efe2"}}`;
-  if(accent) css += `${R}{--gilt:${accent};--holly:color-mix(in oklab, ${accent} 72%, #000)}`
-                 + `@media (prefers-color-scheme: dark){${R}:not([data-theme="light"]){--holly:${accent}}}`
-                 + `${R}[data-theme="dark"]{--holly:${accent}}`;
-  if(bg) css += `@media (prefers-color-scheme: light){${R}:not([data-theme="dark"]){--bg:${bg}}}`
-             + `${R}[data-theme="light"]{--bg:${bg}}`;
+  const get = k => cssColour(I[k + "_colour"] || I[k + "_color"]);
+  const c = {
+    bg: get("background"), ink: get("text"), muted: get("light_text"), line: get("border"),
+    surface: get("panel"), tag: get("card"),
+    header: get("header"), headerText: get("header_text"),
+    accent: get("accent"), accentDark: get("accent_on_light"), buttonText: get("button_text")
+  };
+  const R = ":root:root:root", vars = [], light = [], dark = [];
+  const pageSet = ["bg","ink","muted","line","surface","tag"].some(k => c[k]);
+  if(pageSet){
+    for(const k of Object.keys(PAGE_DEFAULTS)) vars.push(`--${k}:${c[k] || PAGE_DEFAULTS[k]}`);
+    vars.push("color-scheme:light");
+  }
+  if(c.header) vars.push(`--spruce:${c.header}`);
+  if(c.headerText) vars.push(`--on-spruce:${c.headerText}`);
+  else if(c.header) vars.push(`--on-spruce:${luminance(c.header) > .4 ? "#132640" : "#f3efe2"}`);
+  if(c.accent || pageSet) vars.push(`--gilt:${c.accent || "#ff8a75"}`);
+  const onLight = c.accentDark || (c.accent ? `color-mix(in oklab, ${c.accent} 72%, #000)` : "");
+  if(pageSet) vars.push(`--holly:${onLight || "#c4472f"}`);
+  else {
+    if(onLight) light.push(`--holly:${onLight}`);
+    if(c.accent) dark.push(`--holly:${c.accent}`);
+  }
+  if(c.buttonText) vars.push(`--on-accent:${c.buttonText}`);
+  let css = vars.length ? `${R}{${vars.join(";")}}` : "";
+  if(light.length) css += `${R}{${light.join(";")}}`;
+  if(dark.length) css += `@media (prefers-color-scheme: dark){${R}:not([data-theme="light"]){${dark.join(";")}}}${R}[data-theme="dark"]{${dark.join(";")}}`;
   let el = document.getElementById("sheet-colours");
   if(!el){ el = document.createElement("style"); el.id = "sheet-colours"; document.head.appendChild(el); }
   el.textContent = css;

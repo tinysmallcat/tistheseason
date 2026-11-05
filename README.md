@@ -22,15 +22,23 @@ Until a sheet ID is set, the site shows example content.
 
 ## Changing the colours
 
-In the Info tab of the sheet, add or edit these rows (setting in column A, value in column B):
+Every colour on the site can be set in the Info tab of the sheet (setting in column A, value in column B). Use a hex code (`#7a1f2b`) or a colour name (`gold`). Leave a value blank, or leave the row out, to use the standard colour.
 
 | setting | what it colours | standard |
 |---|---|---|
-| `header_colour` | top bar, header and footer | `#132640` |
-| `accent_colour` | dates line, maker categories, labels, buttons | `#ff8a75` |
-| `background_colour` | main page background (light mode only) | `#eef1f6` |
+| `header_colour` | top bar, header band and footer | `#132640` |
+| `header_text_colour` | text and logo on the header | automatic |
+| `accent_colour` | dates line on the header; base for the accents | `#ff8a75` |
+| `accent_on_light_colour` | maker categories, labels and buttons on the light page | darker shade of accent (`#c4472f`) |
+| `button_text_colour` | text on buttons | `#ffffff` |
+| `background_colour` | page background | `#eef1f6` |
+| `text_colour` | main body text | `#132640` |
+| `light_text_colour` | taglines, notes and other secondary text | `#4c5a72` |
+| `border_colour` | lines and borders | `#c8d0de` |
+| `card_colour` | maker cards | `#fbf7ec` |
+| `panel_colour` | boxes on maker and visit pages, filter buttons | `#ffffff` |
 
-Use a hex code (`#7a1f2b`) or a colour name (`gold`). Leave a value blank, or remove the row, to go back to the standard colour. Text on the header switches between light and dark automatically so it stays readable. On light backgrounds the accent is shown a shade darker, for the same reason.
+With no page colours set, visitors in dark mode get a built-in dark version of the site. Setting any page colour (background, text, light text, border, card or panel) turns that off, so everyone sees exactly the sheet's colours. Header text picks light or dark automatically unless `header_text_colour` is set.
 
 ## Adding maker photos
 
