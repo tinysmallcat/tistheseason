@@ -78,7 +78,7 @@ h2{font-family:var(--f-display);font-weight:500;font-size:clamp(1.6rem,4vw,2.2re
 .tag:hover{transform:translateY(-3px)}
 .tag .ph{aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;margin-bottom:14px}
 .tag h3{font-family:var(--f-display);font-weight:500;font-size:1.3rem;margin:0 0 4px;line-height:1.2}
-.tag .cat{font-family:var(--f-hand);font-size:1.25rem;color:var(--holly);line-height:1}
+.tag .cat{display:block;margin-bottom:8px;font-family:var(--f-hand);font-size:1.25rem;color:var(--holly);line-height:1.1}
 .tag p{margin:8px 0 0;color:var(--muted);font-size:.95rem}
 
 /* photo / placeholder */
@@ -96,7 +96,7 @@ h2{font-family:var(--f-display);font-weight:500;font-size:clamp(1.6rem,4vw,2.2re
 .thumbs button[aria-current="true"]{border-color:var(--gilt)}
 .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .vendor h1{font-family:var(--f-display);font-weight:500;font-size:clamp(2rem,5vw,3rem);margin:0;line-height:1.05;text-wrap:balance}
-.vendor .cat{font-family:var(--f-hand);font-size:1.5rem;color:var(--holly)}
+.vendor .cat{display:block;margin-bottom:6px;font-family:var(--f-hand);font-size:1.5rem;color:var(--holly);line-height:1.15}
 .about{white-space:pre-line;max-width:62ch}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
 dl.contact{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;margin:0}
@@ -192,7 +192,7 @@ const SAMPLE = {
     {days:"Monday – Wednesday", open:"", close:"", note:"Closed"}
   ],
   vendors: [
-    {name:"Example Ceramics", category:"Ceramics", tagline:"Wheel-thrown mugs and bowls glazed in sea colours.", about:"This is example text. Each maker's own description appears here, straight from the Vendors tab of your Google Sheet.\n\nLine breaks you type in the sheet are kept.", email:"maker@example.com", phone:"", website:"https://example.com", instagram:"example", facebook:"", tiktok:"", etsy:"", photo_1:"", photo_2:"", photo_3:""},
+    {name:"Example Ceramics", category:"Ceramics, Homeware", tagline:"Wheel-thrown mugs and bowls glazed in sea colours.", about:"This is example text. Each maker's own description appears here, straight from the Vendors tab of your Google Sheet.\n\nLine breaks you type in the sheet are kept.", email:"maker@example.com", phone:"", website:"https://example.com", instagram:"example", facebook:"", tiktok:"", etsy:"", photo_1:"", photo_2:"", photo_3:""},
     {name:"Harbour Prints", category:"Prints", tagline:"Linocut prints of the Harbour Arm and the Leas.", about:"Example maker. Replace with your real vendors in the sheet.", email:"", phone:"", website:"", instagram:"example", facebook:"", tiktok:"", etsy:"", photo_1:"", photo_2:"", photo_3:""},
     {name:"Shingle & Sprig", category:"Candles", tagline:"Soy candles scented like a winter beach walk.", about:"Example maker.", email:"", phone:"", website:"", instagram:"example", facebook:"", tiktok:"", etsy:"", photo_1:"", photo_2:"", photo_3:""},
     {name:"The Leas Larder", category:"Food & drink", tagline:"Chutneys, mincemeat and Kentish apple jelly.", about:"Example maker.", email:"", phone:"", website:"", instagram:"", facebook:"example", tiktok:"", etsy:"", photo_1:"", photo_2:"", photo_3:""},
@@ -263,6 +263,15 @@ document.addEventListener("click", e => {
 });
 function selectText(b){ const n=b.previousElementSibling; if(!n) return; const r=document.createRange(); r.selectNodeContents(n); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
 
+/* Up to three categories per maker, comma-separated in the sheet */
+function catsOf(v){
+  const seen = new Set();
+  return String(v.category || "").split(",").map(s => s.trim()).filter(s => {
+    const k = s.toLowerCase(); if(!s || seen.has(k)) return false; seen.add(k); return true;
+  }).slice(0, 3);
+}
+const catLine = v => catsOf(v).map(esc).join(" · ");
+
 /* ---------- data ---------- */
 /* Google Sheets often drops a leading apostrophe or makes it curly.
    Put a straight one back so "'Tis" always reads (and highlights) correctly. */
@@ -299,7 +308,9 @@ async function loadSheet(){
 /* ---------- views ---------- */
 function home(){
   const I = DATA.info, vs = DATA.vendors;
-  const cats = [...new Set(vs.map(v=>v.category).filter(Boolean))];
+  const catMap = new Map();
+  vs.forEach(v => catsOf(v).forEach(c => { if(!catMap.has(c.toLowerCase())) catMap.set(c.toLowerCase(), c); }));
+  const cats = [...catMap.values()];
   return `
   <header class="hero">
     <div class="wrap">
@@ -324,9 +335,9 @@ function home(){
         ${cats.map(c=>`<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join("")}
       </div>`:""}
       ${vs.length?`<ul class="tags">${vs.map(v=>`
-        <li data-cat="${esc(v.category)}"><a class="tag" href="#${slug(v.name)}">
+        <li data-cats="${esc(catsOf(v).map(c=>c.toLowerCase()).join("|"))}"><a class="tag" href="#${slug(v.name)}">
           <div class="ph">${photoBox(photos(v)[0], v.name)}</div>
-          ${v.category?`<span class="cat">${esc(v.category)}</span>`:""}
+          ${catLine(v)?`<span class="cat">${catLine(v)}</span>`:""}
           <h3>${esc(v.name)}</h3>
           ${v.tagline?`<p>${esc(v.tagline)}</p>`:""}
         </a></li>`).join("")}</ul>`:`<p class="empty">Makers will be announced soon.</p>`}
@@ -352,7 +363,7 @@ function vendorPage(v){
       </div>
       <div class="stack">
         <div>
-          ${v.category?`<span class="cat">${esc(v.category)}</span>`:""}
+          ${catLine(v)?`<span class="cat">${catLine(v)}</span>`:""}
           <h1>${esc(v.name)}</h1>
           ${v.tagline?`<p style="font-size:1.15rem;margin:10px 0 0">${esc(v.tagline)}</p>`:""}
         </div>
@@ -492,7 +503,7 @@ document.addEventListener("click", e => {
   if(chip){
     const c = chip.dataset.cat;
     document.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", b===chip));
-    document.querySelectorAll(".tags li").forEach(li => li.hidden = !!c && li.dataset.cat !== c);
+    document.querySelectorAll(".tags li").forEach(li => li.hidden = !!c && !li.dataset.cats.split("|").includes(c.toLowerCase()));
   }
   const t = e.target.closest(".thumbs button");
   if(t){
